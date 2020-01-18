@@ -5,6 +5,6 @@
 ```sh
 make deps
 make all
-./main
-xdg-open http://localhost:1234
+./server
+xdg-open http://localhost:8080
 ```

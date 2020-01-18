@@ -1,13 +1,13 @@
-all: main.js main
+all: server client.js
 
-main:
-	nim c -d:nerveServer main.nim
+client.js: client.nim
+	nim js client.nim
 
-main.js:
-	nim js -d:nerveClient main.nim
+server: server.nim
+	nim c server.nim
 
-deps:
+deps: readman.nimble
 	nimble install -d
 
 clean:
-	rm -f main main.js
+	rm -f client.js
