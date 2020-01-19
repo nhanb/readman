@@ -1,5 +1,40 @@
-import asynchttpserver, asyncdispatch, asyncfile, json, api
-import karax / [kbase] # to use kstring
+import asynchttpserver, asyncdispatch, asyncfile, json
+import karax / [kbase]
+import api
+
+
+proc serveRpc(req: Request) {.async.} =
+  if req.reqMethod != HttpPost:
+    await req.respond(Http400, "This endpoint only suports POST requests.")
+    return
+
+  try:
+    var bodyJson = parseJson(req.body)
+    let rpcMethod = bodyJson["method"].getStr()
+    let rpcParams = bodyJson["params"]
+
+    case rpcMethod
+    of "get-chapter":
+      let chapterId = to(rpcParams, GetChapterRequest).id
+      if chapterId == "84749":
+        let headers = newHttpHeaders([("Content-Type", "application/json")])
+        let chapter = Chapter(
+          name: kstring"Kaiman",
+          pages: @[
+            kstring"https://s2.mangadex.org/data/a02dc29634d4c2b1afd7ed27a2cb556a/x1.jpg",
+            kstring"https://s2.mangadex.org/data/a02dc29634d4c2b1afd7ed27a2cb556a/x2.jpg",
+            kstring"https://s2.mangadex.org/data/a02dc29634d4c2b1afd7ed27a2cb556a/x3.jpg",
+          ]
+        )
+        await req.respond(Http200, $(%*chapter), headers)
+      else:
+        await req.respond(Http404, "Chapter not found")
+
+    else:
+      await req.respond(Http400, "Invalid RPC method")
+
+  except JsonParsingError:
+    await req.respond(Http400, "Malformed RPC request payload")
 
 
 var server = newAsyncHttpServer()
@@ -15,19 +50,9 @@ proc cb(req: Request) {.async.} =
     let headers = newHttpHeaders([("Content-Type", "text/javascript")])
     await req.respond(Http200, data, headers)
 
-  # TODO json-rpc endpoint:
+  # json-rpc endpoint:
   of "/api":
-    let headers = newHttpHeaders([("Content-Type", "application/json")])
-    let chapter = Chapter(
-      name: kstring"A chapter",
-      pages: @[
-        kstring"https://s2.mangadex.org/data/dcc142a8abe2f790962db8215c7bf77b/x1.png",
-        kstring"https://s2.mangadex.org/data/dcc142a8abe2f790962db8215c7bf77b/x2.png",
-        kstring"https://s2.mangadex.org/data/dcc142a8abe2f790962db8215c7bf77b/x3.png",
-        kstring"https://s2.mangadex.org/data/dcc142a8abe2f790962db8215c7bf77b/x4.png",
-      ]
-    )
-    await req.respond(Http200, $(%*chapter), headers)
+    await serveRpc(req)
 
   else:
     # Instead of 404, serve default HTML so client-side SPA routing takes over:

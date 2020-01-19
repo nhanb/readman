@@ -14,10 +14,19 @@ proc createDom(): VNode =
     button:
       text "GET chapter"
       proc onclick(ev: Event; n: VNode) =
-        ajaxGet(
+        ajaxPost(
           "/api",
-          @[],
-          proc (httpStatus: int; response: cstring) =
+          headers = @[],
+          data = """
+          {
+            "jsonrpc": "2.0",
+            "method": "get-chapter",
+            "params": {
+              "id": "84749"
+            }
+          }
+          """,
+          cont = proc (httpStatus: int; response: cstring) =
           chapter = fromJson[Chapter](response)
           kdom.document.title = chapter.name
         )
