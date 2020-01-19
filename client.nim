@@ -1,25 +1,26 @@
 include karax / prelude
-# alternatively: import karax / [kbase, vdom, kdom, vstyles, karax, karaxdsl, jdict, jstrutils, jjson]
-
-type Chapter = object
-  name: kstring
-  pages: seq[kstring]
-
+include karax / [kajax]
+import karax / kdom
+import api
 
 var chapter = Chapter(
-  name: kstring"A chapter",
-  pages: @[
-    kstring"https://s2.mangadex.org/data/dcc142a8abe2f790962db8215c7bf77b/x1.png",
-    kstring"https://s2.mangadex.org/data/dcc142a8abe2f790962db8215c7bf77b/x2.png",
-    kstring"https://s2.mangadex.org/data/dcc142a8abe2f790962db8215c7bf77b/x3.png",
-    kstring"https://s2.mangadex.org/data/dcc142a8abe2f790962db8215c7bf77b/x4.png",
-  ]
+  name: kstring"",
+  pages: @[]
 )
+
 
 proc createDom(): VNode =
   result = buildHtml(tdiv):
     button:
-      text chapter.name
+      text "GET chapter"
+      proc onclick(ev: Event; n: VNode) =
+        ajaxGet(
+          "/api",
+          @[],
+          proc (httpStatus: int; response: cstring) =
+          chapter = fromJson[Chapter](response)
+          kdom.document.title = chapter.name
+        )
     for url in chapter.pages:
       tdiv:
         img(src = url)
