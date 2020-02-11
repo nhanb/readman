@@ -1,4 +1,7 @@
-all: server client.js
+all: server index.html
+
+index.html: client.html client.js client.css reset.css
+	./build-index.sh
 
 client.js: client.nim
 	nim js client.nim
@@ -10,4 +13,4 @@ deps: readman.nimble
 	nimble install -d
 
 clean:
-	rm -f client.js
+	rm -f *.js index.html server

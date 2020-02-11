@@ -1,0 +1,60 @@
+:root {
+  --bg: #eee;
+  --tab-bar-bg: #231f20;
+}
+
+a {
+  color: inherit;
+}
+
+body {
+  font-family: "Ubuntu", sans-serif;
+  background-color: var(--bg);
+  font-size: 100%;
+}
+
+#tab-bar {
+  background-color: var(--tab-bar-bg);
+  color: white;
+  height: 40px;
+
+  display: grid;
+  align-items: center;
+  grid-auto-flow: column;
+  justify-content: start;
+}
+
+.tab-header {
+  text-decoration: none;
+  height: 100%;
+  outline: 0;
+
+  display: flex;
+  align-items: center;
+  padding: 10px;
+}
+.tab-header:hover {
+  background-color: #333;
+}
+.tab-header.active {
+  background-color: var(--bg);
+  color: var(--tab-bar-bg);
+}
+
+#tab-body {
+  margin: 10px;
+}
+
+#search-container {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-columns: 1fr 120px;
+  grid-gap: 5px;
+  max-width: 700px;
+}
+#search-input {
+  justify-self: stretch;
+  align-self: stretch;
+}
+#search-button {
+}

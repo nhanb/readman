@@ -37,29 +37,29 @@ proc serveRpc(req: Request) {.async.} =
     await req.respond(Http400, "Malformed RPC request payload")
 
 
+proc serveStaticFile(req: Request, filename: string, contentType: string) {.async.} =
+  var file = openAsync(filename, fmRead)
+  let data = await file.readAll()
+  file.close()
+  let headers = newHttpHeaders([("Content-Type", contentType)])
+  await req.respond(Http200, data, headers)
+
+
 var server = newAsyncHttpServer()
 
 proc cb(req: Request) {.async.} =
   case req.url.path
-  # serve static files:
-  of "/client.js":
-    # TODO: I may want to inline everything into a single html file
-    var file = openAsync("client.js", fmRead)
-    let data = await file.readAll()
-    file.close()
-    let headers = newHttpHeaders([("Content-Type", "text/javascript")])
-    await req.respond(Http200, data, headers)
 
-  # json-rpc endpoint:
   of "/api":
     await serveRpc(req)
 
+  of "/logo.svg":
+    await req.serveStaticFile("logo.svg", "image/svg+xml")
+
   else:
     # Instead of 404, serve default HTML so client-side SPA routing takes over:
-    var file = openAsync("client.html", fmRead)
-    let data = await file.readAll()
-    file.close()
-    let headers = newHttpHeaders([("Content-Type", "text/html")])
-    await req.respond(Http200, data, headers)
+    await req.serveStaticFile("index.html", "text/html")
 
-waitFor server.serve(Port(8080), cb)
+const port = 8080
+echo "Starting server at http://localhost:", port
+waitFor server.serve(Port(port), cb)
