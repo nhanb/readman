@@ -4,7 +4,7 @@
 
 ```sh
 make deps # run once
-ls * | entr -c make # run this in 1 terminal
+ls * | entr make # run this in 1 terminal
 echo server | entr -r ./server # run this in another terminal
 
 # server should now be live on localhost:8080

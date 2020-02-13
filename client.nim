@@ -1,5 +1,5 @@
 include karax / prelude
-include karax / [kajax]
+include karax / [kajax, jjson]
 import karax / kdom
 
 type k = kstring
@@ -33,18 +33,29 @@ proc renderSearchPage(): VNode =
     form(action=k"/", `method`=k"POST"):
       tdiv(id=k"search-container"):
         input(id=k"search-input", `type`=k"text", name=k"query", placeholder=k"Enter manga title", required=k"required")
-        input(
+        button(
           id=k"search-button",
           `type`=k"submit",
-          value = if state.searching: k"Searching..." else: k"Search",
           disabled = if state.searching: k"disabled" else: k(nil)
-        )
+        ):
+          if state.searching:
+            span(class=k"spinner"): text k":"
+            span: text k" searching"
+          else: text k"search"
 
       proc onsubmit(ev: Event; n: VNode) =
-        let query = document.querySelector(k"#search-input").value
+        let query: kstring = document.querySelector(k"#search-input").value
+        let data = %*{k"query": query}
         state.searching = true
-        kout(query)
-        # TODO
+        ajaxPost(
+          url = k"/api/search",
+          headers = [],
+          data = data.toJson(),
+          cont = proc (httpStatus: int, response: cstring) =
+            kout(httpStatus)
+            kout(response)
+            state.searching = false
+        )
         ev.preventDefault()
 
 
